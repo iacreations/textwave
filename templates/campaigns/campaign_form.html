@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}New Campaign - TextWave{% endblock %}
+{% block page_title %}Create Campaign{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-megaphone text-success"></i>
+                <span>Campaign Details</span>
+            </div>
+            <div class="card-body">
+                <form method="post" id="campaign-form">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Campaign Name</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Sender ID <small class="text-muted">(max 11 chars)</small></label>
+                        {{ form.sender_id }}
+                        {% if form.sender_id.errors %}<div class="text-danger small">{{ form.sender_id.errors }}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Message</label>
+                        {{ form.message }}
+                        <div id="char-counter" class="text-muted small mt-1">0 characters | 1 SMS part(s) | 160 remaining</div>
+                        {% if form.message.errors %}<div class="text-danger small">{{ form.message.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Recipients</label>
+                        <div class="d-flex gap-4 mb-2">
+                            {% for choice in form.recipient_type %}
+                            <div class="form-check">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div id="groups-section">
+                            <div class="border rounded p-3">
+                                <label class="form-label fw-semibold small text-muted">SELECT GROUPS</label>
+                                {% for choice in form.groups %}
+                                <div class="form-check">
+                                    {{ choice.tag }}
+                                    <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
+                                </div>
+                                {% endfor %}
+                                {% if form.groups.errors %}<div class="text-danger small">{{ form.groups.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <div id="manual-section">
+                            {{ form.manual_numbers }}
+                            {% if form.manual_numbers.errors %}<div class="text-danger small">{{ form.manual_numbers.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Send Options</label>
+                        <div class="d-flex gap-4 mb-2">
+                            {% for choice in form.send_option %}
+                            <div class="form-check">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div id="schedule-section" style="display:none;">
+                            <label class="form-label fw-semibold">Schedule Date & Time</label>
+                            <input type="datetime-local" name="scheduled_at" class="form-control">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Create Campaign
+                    </button>
+                    <a href="{% url 'campaigns:campaign_list' %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-info-circle text-success"></i>
+                <span>Tips</span>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled text-muted small">
+                    <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Keep messages under 160 chars for 1 SMS credit.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Sender ID can be up to 11 alphanumeric characters.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Each recipient uses 1 SMS credit.</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Current balance:
+                        <strong class="text-success">{{ request.user.profile.sms_balance }} credits</strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

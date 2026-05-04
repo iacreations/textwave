@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Contacts - TextWave{% endblock %}
+{% block page_title %}Contacts{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted">{{ total_count }} contact{{ total_count|pluralize }}</span>
+    <div class="d-flex gap-2">
+        <a href="{% url 'contacts:import_contacts' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-upload"></i> Import CSV
+        </a>
+        <a href="{% url 'contacts:contact_create' %}" class="btn btn-success btn-sm">
+            <i class="bi bi-person-plus"></i> Add Contact
+        </a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <input type="text" name="search" class="form-control form-control-sm"
+                       placeholder="Search name, phone, email..." value="{{ search }}">
+            </div>
+            <div class="col-md-4">
+                <select name="group" class="form-select form-select-sm">
+                    <option value="">All Groups</option>
+                    {% for group in groups %}
+                    <option value="{{ group.pk }}" {% if group_filter == group.pk|stringformat:'s' %}selected{% endif %}>
+                        {{ group.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search"></i> Search</button>
+                <a href="{% url 'contacts:contact_list' %}" class="btn btn-outline-secondary btn-sm">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Group</th>
+                        <th>Added</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contact in page_obj %}
+                    <tr>
+                        <td class="fw-semibold">{{ contact.name }}</td>
+                        <td>{{ contact.phone }}</td>
+                        <td class="text-muted">{{ contact.email|default:"-" }}</td>
+                        <td>
+                            {% if contact.group %}
+                            <span class="badge bg-secondary">{{ contact.group.name }}</span>
+                            {% else %}-{% endif %}
+                        </td>
+                        <td class="text-muted small">{{ contact.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'contacts:contact_edit' contact.pk %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="post" action="{% url 'contacts:contact_delete' contact.pk %}" class="d-inline"
+                                  onsubmit="return confirm('Delete {{ contact.name }}?')">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="bi bi-people fs-1 d-block mb-2"></i>
+                            No contacts found.
+                            <a href="{% url 'contacts:contact_create' %}">Add your first contact</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer">
+        <nav>
+            <ul class="pagination pagination-sm mb-0 justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search }}&group={{ group_filter }}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search }}&group={{ group_filter }}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

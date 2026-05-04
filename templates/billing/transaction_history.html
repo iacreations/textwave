@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Transaction History - TextWave{% endblock %}
+{% block page_title %}Transaction History{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-receipt text-success"></i>
+        <span>All Transactions</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Type</th>
+                        <th>Credits</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in page_obj %}
+                    <tr>
+                        <td>{{ tx.description }}</td>
+                        <td><span class="badge bg-secondary">{{ tx.get_transaction_type_display }}</span></td>
+                        <td>
+                            <span class="fw-bold {% if tx.credits > 0 %}text-success{% else %}text-danger{% endif %}">
+                                {% if tx.credits > 0 %}+{% endif %}{{ tx.credits }}
+                            </span>
+                        </td>
+                        <td>${{ tx.amount }}</td>
+                        <td>
+                            {% if tx.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                            {% elif tx.status == 'pending' %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                            {% else %}
+                            <span class="badge bg-danger">Failed</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">{{ tx.created_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="bi bi-receipt fs-1 d-block mb-2"></i>
+                            No transactions yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer">
+        <nav>
+            <ul class="pagination pagination-sm mb-0 justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}"><i class="bi bi-chevron-left"></i></a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}"><i class="bi bi-chevron-right"></i></a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
