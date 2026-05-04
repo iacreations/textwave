@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block title %}{{ campaign.name }} - TextWave{% endblock %}
+{% block page_title %}Campaign Detail{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h4 class="mb-1">{{ campaign.name }}</h4>
+        <span class="badge badge-{{ campaign.status }} me-2">{{ campaign.get_status_display }}</span>
+        <span class="text-muted small">Created {{ campaign.created_at|date:"M d, Y H:i" }}</span>
+    </div>
+    <div class="d-flex gap-2">
+        {% if campaign.status == 'draft' or campaign.status == 'scheduled' %}
+        <form method="post" action="{% url 'campaigns:campaign_send' campaign.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success"
+                    onclick="return confirm('Send this campaign now?')">
+                <i class="bi bi-send"></i> Send Now
+            </button>
+        </form>
+        {% endif %}
+        <a href="{% url 'campaigns:campaign_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card text-center">
+            <div class="fs-1 fw-bold">{{ stats.total }}</div>
+            <div class="text-muted">Total Recipients</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card text-center">
+            <div class="fs-1 fw-bold text-primary">{{ stats.sent }}</div>
+            <div class="text-muted">Sent</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card text-center">
+            <div class="fs-1 fw-bold text-success">{{ stats.delivered }}</div>
+            <div class="text-muted">Delivered</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card text-center">
+            <div class="fs-1 fw-bold text-danger">{{ stats.failed }}</div>
+            <div class="text-muted">Failed</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-chat-text text-success"></i>
+                <span>Message</span>
+            </div>
+            <div class="card-body">
+                <p class="mb-2"><strong>Sender:</strong> {{ campaign.sender_id }}</p>
+                <div class="bg-light rounded p-3">{{ campaign.message }}</div>
+                <div class="text-muted small mt-2">{{ campaign.message|length }} characters</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-people text-success"></i>
+                <span>Recipients</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Phone Number</th>
+                                <th>Status</th>
+                                <th>Message ID</th>
+                                <th>Sent At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for recipient in page_obj %}
+                            <tr>
+                                <td>{{ recipient.phone_number }}</td>
+                                <td>
+                                    <span class="badge badge-{{ recipient.status }}">{{ recipient.get_status_display }}</span>
+                                </td>
+                                <td class="font-monospace small">{{ recipient.message_id|default:"-" }}</td>
+                                <td class="text-muted small">{{ recipient.sent_at|date:"M d H:i"|default:"-" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">No recipients</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% if page_obj.has_other_pages %}
+            <div class="card-footer">
+                <nav>
+                    <ul class="pagination pagination-sm mb-0 justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}"><i class="bi bi-chevron-left"></i></a></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+                        {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}"><i class="bi bi-chevron-right"></i></a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Groups - TextWave{% endblock %}
+{% block page_title %}Contact Groups{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-end mb-3">
+    <a href="{% url 'contacts:group_create' %}" class="btn btn-success btn-sm">
+        <i class="bi bi-folder-plus"></i> Create Group
+    </a>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Contacts</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in page_obj %}
+                    <tr>
+                        <td class="fw-semibold">{{ group.name }}</td>
+                        <td class="text-muted">{{ group.description|default:"-" }}</td>
+                        <td><span class="badge bg-success">{{ group.contact_count }}</span></td>
+                        <td class="text-muted small">{{ group.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'contacts:group_edit' group.pk %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="post" action="{% url 'contacts:group_delete' group.pk %}" class="d-inline"
+                                  onsubmit="return confirm('Delete group {{ group.name }}?')">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-5">
+                            <i class="bi bi-folder fs-1 d-block mb-2"></i>
+                            No groups yet. <a href="{% url 'contacts:group_create' %}">Create one</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer">
+        <nav>
+            <ul class="pagination pagination-sm mb-0 justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}"><i class="bi bi-chevron-left"></i></a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}"><i class="bi bi-chevron-right"></i></a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

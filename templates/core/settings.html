@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Settings - TextWave{% endblock %}
+{% block page_title %}Settings{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-gear text-success"></i>
+                <span>Account Settings</span>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Default Sender ID</label>
+                    <p class="form-control-plaintext fw-bold">{{ profile.sender_id }}</p>
+                    <small class="text-muted">Change in <a href="{% url 'accounts:profile' %}">Profile</a></small>
+                </div>
+                <hr>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">SMS Balance</label>
+                    <p class="display-6 fw-bold text-success mb-1">{{ profile.sms_balance }}</p>
+                    <p class="text-muted small">Available credits</p>
+                    <a href="{% url 'billing:billing' %}" class="btn btn-success btn-sm">
+                        <i class="bi bi-plus-circle"></i> Top Up
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-key text-success"></i>
+                <span>API Access</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-2">Use this key to access the TextWave API programmatically.</p>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control font-monospace" id="api-key-value"
+                           value="{{ profile.api_key }}" readonly>
+                    <button class="btn btn-outline-secondary" id="copy-api-key" type="button">
+                        <i class="bi bi-clipboard"></i> Copy
+                    </button>
+                </div>
+                <form method="post" action="{% url 'accounts:regenerate_api_key' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-warning btn-sm"
+                            onclick="return confirm('Regenerate API key? Your old key will stop working immediately.')">
+                        <i class="bi bi-arrow-repeat"></i> Regenerate API Key
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
