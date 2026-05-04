@@ -4,6 +4,8 @@ from django.contrib.auth import login, logout, authenticate, update_session_auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.utils.http import url_has_allowed_host_and_scheme
 from .forms import LoginForm, RegisterForm, ProfileForm
 
 def login_view(request):
@@ -14,7 +16,10 @@ def login_view(request):
         user = form.get_user()
         login(request, user)
         messages.success(request, f'Welcome back, {user.first_name or user.username}!')
-        return redirect(request.GET.get('next', 'core:dashboard'))
+        next_url = request.GET.get('next', '')
+        if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+            return HttpResponseRedirect(next_url)
+        return redirect('core:dashboard')
     return render(request, 'accounts/login.html', {'form': form})
 
 def register_view(request):
